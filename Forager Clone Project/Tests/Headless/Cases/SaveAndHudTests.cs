@@ -86,6 +86,6 @@ public partial class HudBindingTests : HeadlessTest
 
         context.AssertTrue(hud.CoinsText.Contains("42", StringComparison.Ordinal), $"coin label updated (got '{hud.CoinsText}')");
         context.AssertInRange(hud.XpValue, 0.45, 0.55, "xp bar shows 10/20 progress");
-        context.AssertTrue(hud.LevelText.Contains("1", StringComparison.Ordinal), $"level label (got '{hud.LevelText}')");
+        context.AssertTrue(hud.LevelText.Contains('1'), $"level label (got '{hud.LevelText}')");
     }
 }

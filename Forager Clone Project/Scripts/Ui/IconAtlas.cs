@@ -37,7 +37,7 @@ public sealed class IconAtlas
         return texture;
     }
 
-    private Texture2D? Build(string iconName)
+    private AtlasTexture? Build(string iconName)
     {
         if (!_data.TryResolve(iconName, out var sheet, out var x, out var y))
         {

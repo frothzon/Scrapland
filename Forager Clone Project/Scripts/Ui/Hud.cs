@@ -1,3 +1,4 @@
+using System.Globalization;
 using Forager.Core.Items;
 using Forager.Core.Player;
 using ForagerClone.Game;
@@ -105,7 +106,7 @@ public partial class Hud : CanvasLayer
                 continue;
             }
 
-            slot.Count.Text = stack.Amount.ToString();
+            slot.Count.Text = stack.Amount.ToString(CultureInfo.InvariantCulture);
             slot.Icon.Texture = _items.TryGet(stack.ItemId, out var definition) ? _atlas.Get(definition.Icon) : null;
             slot.Root.Modulate = Colors.White;
         }
