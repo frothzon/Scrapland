@@ -1,0 +1,21 @@
+<Project>
+  <!--
+    Shared settings for every C# project in this repository.
+
+    TargetFramework is deliberately NOT set here: Godot.NET.Sdk owns the TFM for the game
+    assembly, and it must stay net8.0 because GodotSharp 4.7.2 ships lib/net8.0 only.
+    See lessons_learned.md LL-003.
+  -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- Warnings are visible but must not break the headless gate for vendor/generated code. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- CA1711: "ItemStack"/"RecipeStack"-style names are idiomatic game domain terms here. -->
+    <NoWarn>$(NoWarn);CA1711</NoWarn>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

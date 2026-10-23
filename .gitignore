@@ -1,0 +1,22 @@
+# Godot generated data (regenerate with: tools\import-assets.ps1)
+.godot/
+*.translation
+
+# .NET build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Test + audit output
+artifacts/
+TestResults/
+
+# Engine binaries are kept locally, never committed
+Godot_v4.7.2-stable_mono_win64/
+Godot_v4.7.2-stable_win64.exe/
+
+# OS noise
+Thumbs.db
+.DS_Store

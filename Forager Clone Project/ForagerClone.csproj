@@ -1,0 +1,16 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+  <PropertyGroup>
+    <!-- net8.0 is mandatory: GodotSharp 4.7.2 ships lib/net8.0 only (lessons_learned.md LL-003). -->
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>ForagerClone</RootNamespace>
+    <AssemblyName>ForagerClone</AssemblyName>
+    <!-- Tests live outside res:// so this project never compiles test code. -->
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Pure-C# domain layer: no Godot types, covered by tests\Forager.Tests. -->
+    <ProjectReference Include="..\src\Forager.Core\Forager.Core.csproj" />
+  </ItemGroup>
+</Project>

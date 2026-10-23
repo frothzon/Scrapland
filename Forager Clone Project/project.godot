@@ -1,0 +1,30 @@
+; Forager Clone - Godot 4.7.2 (.NET/mono) project file.
+; Generated/maintained by hand; see agents.md for the locked toolchain.
+; NOTE: input actions are registered in code (Scripts/Game/InputActions.cs) instead of here so
+; they are deterministic and testable headlessly (see lessons_learned.md LL-010).
+
+config_version=5
+
+[application]
+
+config/name="Forager Clone"
+run/main_scene="res://Scenes/Main.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[dotnet]
+
+project/assembly_name="ForagerClone"
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

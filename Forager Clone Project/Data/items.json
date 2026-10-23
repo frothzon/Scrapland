@@ -1,0 +1,23 @@
+{
+  "$schema": "./schemas/items.schema.json",
+  "items": [
+    { "id": "wood", "name": "Wood", "maxStack": 99, "value": 2, "tags": ["resource", "wood"], "icon": "icon_wood" },
+    { "id": "stone", "name": "Stone", "maxStack": 99, "value": 2, "tags": ["resource", "stone"], "icon": "icon_stone" },
+    { "id": "fiber", "name": "Fiber", "maxStack": 99, "value": 1, "tags": ["resource", "plant"], "icon": "icon_fiber" },
+    { "id": "berry", "name": "Berry", "maxStack": 99, "value": 3, "tags": ["food", "plant"], "icon": "icon_berry" },
+    { "id": "coin", "name": "Coin", "maxStack": 9999, "value": 1, "tags": ["currency"], "icon": "icon_coin" },
+    { "id": "iron_ore", "name": "Iron Ore", "maxStack": 99, "value": 6, "tags": ["resource", "ore"], "icon": "icon_iron_ore" },
+    { "id": "coal", "name": "Coal", "maxStack": 99, "value": 4, "tags": ["resource", "ore"], "icon": "icon_coal" },
+    { "id": "gold_ore", "name": "Gold Ore", "maxStack": 99, "value": 12, "tags": ["resource", "ore"], "icon": "icon_gold_ore" },
+    { "id": "gem", "name": "Gem", "maxStack": 99, "value": 40, "tags": ["resource", "treasure"], "icon": "icon_gem" },
+    { "id": "wheat", "name": "Wheat", "maxStack": 99, "value": 3, "tags": ["food", "crop"], "icon": "icon_wheat" },
+    { "id": "cotton", "name": "Cotton", "maxStack": 99, "value": 3, "tags": ["resource", "crop"], "icon": "icon_cotton" },
+    { "id": "leather", "name": "Leather", "maxStack": 99, "value": 8, "tags": ["resource", "animal"], "icon": "icon_leather" },
+    { "id": "milk", "name": "Milk", "maxStack": 99, "value": 6, "tags": ["food", "animal"], "icon": "icon_milk" },
+    { "id": "egg", "name": "Egg", "maxStack": 99, "value": 4, "tags": ["food", "animal"], "icon": "icon_egg" },
+    { "id": "wool", "name": "Wool", "maxStack": 99, "value": 5, "tags": ["resource", "animal"], "icon": "icon_wool" },
+    { "id": "wood_axe", "name": "Wood Axe", "maxStack": 1, "value": 10, "tags": ["tool", "axe"], "icon": "icon_axe" },
+    { "id": "pickaxe", "name": "Pickaxe", "maxStack": 1, "value": 12, "tags": ["tool", "pickaxe"], "icon": "icon_pickaxe" },
+    { "id": "sword", "name": "Sword", "maxStack": 1, "value": 15, "tags": ["tool", "weapon"], "icon": "icon_sword" }
+  ]
+}
