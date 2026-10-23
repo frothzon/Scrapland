@@ -86,5 +86,21 @@ Horse/Zebra→mounts.
 - Fonts: `fonts\pixelFont-7-8x14-sproutLands.ttf` (+ preview PNG)
 - Emotes/emoji: `Dialouge UI\Emotes\*`, `emojis-free\emoji style ui\*`
 
-The icon sheets are atlases: `Data\icon_atlas.json` (M2) maps logical icon names (`icon_wood`, …) to rects.
-Until then, `ItemDefinition.Icon` only stores the logical name.
+The icon sheets are atlases: `Data\icon_atlas.json` maps logical icon names (`icon_wood`, …) to cells.
+`All Icons.png` is **288×48**, i.e. an 18 × 3 grid of 16 px cells; `white icons.png` is 96×48 (6 × 3).
+Bounds are unit-tested, the visual choice is a manual eyeball check (`Docs\testing.md`).
+
+## Assets bound in M0/M1
+
+| Role | Asset | Transform |
+|---|---|---|
+| Player model | `ChibiCharacters\glb emission\student.glb` | scale **0.73** ⇒ ~1.5 m tall, 11 clips |
+| Tree node | `3D Trees\OBJ\BirchTree_1.obj` | scale 1.0 (3.57 m) |
+| Tree node (variant) | `3D Trees\OBJ\PineTree_1.obj` | scale 1.0 |
+| Rock node | `3D Trees\OBJ\Rock_1.obj` | scale 1.0 (0.88 m), pickaxe only |
+| Berry bush node | `3D Trees\OBJ\BushBerries_1.obj` | scale 0.8 |
+| HUD icons | `Sprout Lands …\Sprite sheets\Icons\All Icons.png` | 16 px cells, indices in `Data\icon_atlas.json` |
+| HUD font | `Sprout Lands …\fonts\pixelFont-7-8x14-sproutLands.ttf` | theme default, size 14 |
+
+Node meshes are re-centred at build time (`NodeFactory`): the pivot subtracts the mesh AABB centre and
+raises the bottom to y = 0, so OBJ origins (which are off-centre) never affect placement.

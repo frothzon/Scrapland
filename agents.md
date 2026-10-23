@@ -143,6 +143,11 @@ icon rects in bounds, expected node counts).
 - Namespaces: `Forager.Core.*` (logic), `ForagerClone.Scripts.*` / `ForagerClone.Game` (engine),
   `ForagerClone.Tests.Headless.*` (tests).
 - Node lookup: `GetNode<T>("Path")` (typed) or `GetNodeOrNull<T>`; no string-based `Get("…")`.
+- **Inject collaborators, don't discover them**: pass `CameraRig`/`GameSession`/`Clock` explicitly
+  (`PlayerFactory.Create(..., rig: rig)`); a failed `FindChild` in `_Ready` is silent and skews results
+  (`LL-023`). Name lookups are only a last-resort fallback.
+- Register input actions idempotently (`InputActions.EnsureRegistered()`) in any node that reads input,
+  so headless tests that skip `Main` never hit "InputMap action doesn't exist" (`LL-027`).
 - Do not call `GD.Print` from Core. Logging happens in adapters/tests.
 - Prefer composition over inheritance; small nodes with one job.
 

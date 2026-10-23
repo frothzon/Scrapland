@@ -1,0 +1,34 @@
+{
+  "player": {
+    "walkSpeed": 3.5,
+    "runSpeed": 6.0,
+    "acceleration": 30.0,
+    "jumpVelocity": 5.0,
+    "gravity": 22.0,
+    "modelScale": 0.73
+  },
+  "camera": {
+    "yawDegrees": 0.0,
+    "pitchDegrees": -55.0,
+    "distance": 14.0,
+    "targetHeight": 1.0,
+    "followSharpness": 12.0
+  },
+  "gather": {
+    "rangeMeters": 12.0,
+    "swingSeconds": 0.35,
+    "magnetRadius": 3.0,
+    "magnetSpeed": 9.0
+  },
+  "progression": {
+    "baseXp": 20,
+    "curveExponent": 1.5,
+    "maxLevel": 30
+  },
+  "world": {
+    "seed": 1337,
+    "nodeCount": 14,
+    "plotSize": 16.0
+  },
+  "startingItems": ["wood_axe", "pickaxe"]
+}

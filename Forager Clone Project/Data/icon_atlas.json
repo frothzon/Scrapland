@@ -1,0 +1,32 @@
+{
+  "$comment": "Logical icon name -> cell index on the Sprout Lands icon sheet (18 x 3 cells of 16px). Indices are data: tweak freely, bounds are tested.",
+  "defaultSheet": "all_icons",
+  "sheets": {
+    "all_icons": {
+      "path": "res://Assets/Sprout Lands - UI Pack - Basic pack/Sprite sheets/Icons/All Icons.png",
+      "cell": 16,
+      "columns": 18,
+      "rows": 3
+    }
+  },
+  "icons": {
+    "icon_wood": 0,
+    "icon_stone": 1,
+    "icon_fiber": 2,
+    "icon_berry": 3,
+    "icon_coin": 4,
+    "icon_iron_ore": 5,
+    "icon_coal": 6,
+    "icon_gold_ore": 7,
+    "icon_gem": 8,
+    "icon_wheat": 9,
+    "icon_cotton": 10,
+    "icon_leather": 11,
+    "icon_milk": 12,
+    "icon_egg": 13,
+    "icon_wool": 14,
+    "icon_axe": 15,
+    "icon_pickaxe": 16,
+    "icon_sword": 17
+  }
+}

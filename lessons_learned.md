@@ -32,11 +32,11 @@
 | Area | Entries |
 |---|---|
 | Tooling | LL-001, LL-004, LL-005, LL-010 |
-| Engine / C# | LL-003, LL-006, LL-011, LL-012, LL-015, LL-020, LL-021 |
-| Assets | LL-007, LL-013, LL-014 |
-| Headless | LL-002, LL-008, LL-017, LL-019 |
+| Engine / C# | LL-003, LL-006, LL-011, LL-012, LL-015, LL-020, LL-021, LL-023, LL-026 |
+| Assets | LL-007, LL-013, LL-014, LL-025, LL-028 |
+| Headless | LL-002, LL-008, LL-017, LL-019, LL-027 |
 | PowerShell | LL-009, LL-018 |
-| Gameplay / domain | LL-016, LL-022 |
+| Gameplay / domain | LL-016, LL-022, LL-024 |
 
 ---
 
@@ -307,6 +307,80 @@ Measured on this machine, not assumed. Re-verify if the machine changes; don't r
 - **Guard:** `SeededRngTests.StableHash_IsIndependentOfProcessRandomization`,
   `SeededRngTests.Fork_IsDeterministic_AndLabelDependent`.
 - **References:** `src/Forager.Core/Randomness/SeededRng.cs`.
+
+---
+
+## M1 additions (player, gathering, HUD, save)
+
+### LL-023 — Player ignored the camera yaw because `FindChild` found nothing
+- **Date / area / status:** 2026-10-23 · Engine · resolved
+- **Symptom:** `CameraRelativeMoveTests` failed with `x = 0.00, z = -3.5` — forward input still moved along
+  world −Z after `CameraRig.SetYawDegrees(90)`.
+- **Root cause:** `PlayerController._Ready` discovered the rig with
+  `GetTree().Root.FindChild("CameraRig", true, false)`. It returned null, `Rig` stayed null, and yaw
+  silently fell back to 0 — a silent failure that looks like a maths bug.
+- **Fix:** inject the collaborator. `PlayerFactory.Create(balance, session, rig: rig)` sets
+  `PlayerController.Rig` before the node enters the tree; the name lookup remains only a fallback.
+- **Guard:** `CameraRelativeMoveTests` asserts `fixture.Player.Rig == fixture.Rig` **before** asserting
+  movement, so a wiring regression fails with a clear message.
+- **References:** `Scripts/Player/PlayerFactory.cs`, `Scripts/Player/PlayerController.cs`,
+  `Tests/Headless/Cases/MovementTests.cs`.
+
+### LL-024 — Nothing was harvestable: the camera ray was shorter than the camera distance
+- **Date / area / status:** 2026-10-23 · Gameplay · resolved
+- **Symptom:** aiming at a tree 2 m in front of the player produced `CurrentTarget == null`.
+- **Root cause:** the ray starts at the camera, which sits ~14 m behind the player, but its length was the
+  gather range (12 m). A target 2 m from the player is ~14.5 m from the camera, so the ray ended short.
+- **Fix:** two separate numbers — `RayLengthMeters = max(40, reach + 25)` for the cast, and
+  `MaxReachMeters` (from `Data/balance.json` `gather.rangeMeters`) checked player→node after the hit. Reach
+  now means what a player expects.
+- **Guard:** `AimRayTests` covers near hit, a 16 m node rejected as out of reach, and aiming at the sky.
+- **References:** `Scripts/Interaction/Interactor.cs`, `Data/balance.json`.
+
+### LL-025 — Idle resolved to the crouch-idle clip
+- **Date / area / status:** 2026-10-23 · Assets · resolved
+- **Symptom:** `ClipNameResolverTests` expected `iddleanim_` for `LogicalClip.Idle` but got
+  `crouchiddleanim_`.
+- **Root cause:** the suffix `iddleanim_` also matches `crouchiddleanim_`; the resolver returned the first
+  name in list order, so the longer, wrong clip won.
+- **Fix:** within one suffix pattern the **shortest** matching name wins (most specific); patterns stay
+  ordered most-specific first.
+- **Guard:** `ClipNameResolverTests.ResolvesKnightStyleSuffixes` and
+  `CrouchIdle_DoesNotResolveToPlainIdleOrCrouch`.
+- **References:** `src/Forager.Core/Animation/ClipNameResolver.cs`.
+
+### LL-026 — `CS0411` comparing `AnimationPlayer.CurrentAnimation` with a string
+- **Date / area / status:** 2026-10-23 · Engine · resolved
+- **Symptom:** `error CS0411: The type arguments for method 'HeadlessTestContext.AssertEqual<T>' cannot be
+  inferred from the usage`.
+- **Root cause:** in Godot 4.7 `AnimationPlayer.CurrentAnimation` is a `StringName`, not a `string`, so
+  `AssertEqual(string, StringName, …)` has no single `T`.
+- **Fix:** compare `animator.Animation.CurrentAnimation.ToString()`.
+- **Guard:** `PlayerAssetTests` compiles and asserts the clip switch.
+- **References:** `Tests/Headless/Cases/AssetBindingTests.cs`.
+
+### LL-027 — "The InputMap action \"use_tool\" doesn't exist" spam in headless runs
+- **Date / area / status:** 2026-10-23 · Headless · resolved
+- **Symptom:** every physics frame logged `ERROR: The InputMap action "use_tool" doesn't exist.` with a C#
+  backtrace pointing at `Interactor._PhysicsProcess`.
+- **Root cause:** actions are registered in code, but tests construct `GameSession`/`Interactor` directly
+  without booting `Main`, which was the only caller of `InputActions.EnsureRegistered()`.
+- **Fix:** call `InputActions.EnsureRegistered()` at the top of `GameSession._Ready` and
+  `PlayerController._Ready` (it is idempotent), so any node that reads input guarantees the actions exist.
+- **Guard:** `InputActionsTests` asserts idempotency; the run log must stay free of "doesn't exist".
+- **References:** `Scripts/Game/GameSession.cs`, `Scripts/Player/PlayerController.cs`,
+  `Scripts/Game/InputActions.cs`.
+
+### LL-028 — The Sprout Lands UI pack is non-commercial and non-redistributable
+- **Date / area / status:** 2026-10-23 · Assets · resolved
+- **Symptom:** the licence was previously recorded as "no licence file found".
+- **Root cause:** `read_me.txt` sits at the pack root; nobody opened it.
+- **Fix:** the readme says (author **Cup Nooble**): *"You can modify the assets. You can not redistribute or
+  resale, even if modified. You can only use these assets in non-commercial projects."* Recorded in
+  `Docs/ATTRIBUTION.md`: this repo must stay private and must never ship those sprites; a commercial build
+  needs the Premium pack or permission.
+- **Guard:** none automated — `Docs/ATTRIBUTION.md` checklist is the gate before any public build.
+- **References:** `Assets/Sprout Lands - UI Pack - Basic pack/read_me.txt`, `Docs/ATTRIBUTION.md`.
 
 
 

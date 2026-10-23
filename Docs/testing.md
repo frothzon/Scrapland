@@ -20,10 +20,12 @@ Logs land in `artifacts\` (`headless-tests.log`, `asset-audit.log`, `gate-selfte
 
 ## Tier 1 — `dotnet test` (no engine)
 
-41 tests today. Coverage: inventory stacking/overflow/atomicity, item data validation (loads the
-**real** `Data/items.json` from the Godot project folder), sim clock rollover/night window, seeded RNG
-and fork determinism (pinned FNV constants), architecture guards (Core has no Godot reference and no
-unexpected dependencies), data-source abstraction.
+141 tests. Coverage: inventory stacking/overflow/atomicity, item data validation (loads the **real**
+`Data/items.json`), node data validation (`Data/nodes.json`: tools, drops, mesh paths, caps), balance
+validation (`Data/balance.json`), harvest rules (tool gating, cooldown, depletion, drop ranges, respawn),
+XP curve + profile level-ups/coins, save round-trip + version rejection, seeded RNG/fork determinism,
+clip-name resolution for all four asset naming styles, fixed-camera maths, icon-atlas bounds, deterministic
+plot placement, sim clock rollover/night window, architecture guards (Core has no Godot reference).
 
 Why it matters: ~90 % of future rules (crafting, skills, economy, worldgen) can be tested in milliseconds
 with no engine in the loop.
@@ -60,9 +62,24 @@ public partial class PlayerMovementTests : HeadlessTest
 Determinism rules: step physics frames (never `CreateTimer`), drive time through `SimClock`, seed through
 `context.Rng`/`--seed`, assert with tolerances (`AssertNear`) for anything physics-derived.
 
-Current tests: `HarnessSmokeTests` (headless enforcement, frame stepping, Core usable from the engine),
-`InputActionsTests` (code-registered actions are idempotent), `ContentLoadTests` (`res://Data/items.json`
-parses through the engine, `Main.tscn` instantiates with meshes and a camera).
+M1 suite (14 tests): `HarnessSmokeTests` (headless enforcement, frame stepping, Core usable from the
+engine), `InputActionsTests` (code-registered actions are idempotent), `ContentLoadTests` (`res://Data/*.json`
+parse through the engine, `Main.tscn` builds the slice), `MovementTests` (walk distance, run > walk, fixed
+camera geometry), `CameraRelativeMoveTests` (yaw 90 ⇒ forward is −X), `PlayerAssetTests` (GLB normalises to
+~1.5 m and all four clips resolve), `NodeFactoryTests` (mesh + collider + grounded pivot per node type),
+`AimRayTests` (in-reach hit, out-of-reach rejected, sky rejected), `HarvestTreeTests` (3 swings ⇒ wood,
+xp, depletion), `MissingToolTests` (rock without pickaxe ⇒ no damage + HUD reason), `PickupMagnetTests`,
+`RespawnTests`, `SaveLoadRoundTripTests`, `HudBindingTests`.
+
+Test seams that make this possible (all documented in code):
+
+| Need | Seam |
+|---|---|
+| No keyboard | `PlayerController.ApplyMoveInput(Vector2, bool run)` |
+| No mouse | `Interactor.AimAt(Vector3)` + `TryHarvestCurrentTarget()` |
+| No wall clock | `GameSession.AdvanceClock = false`, then `Session.Clock.Advance(...)` |
+| No real save slot | `session.Persistence = new InMemoryPersistence()` |
+| Known camera | `CameraRig.SetYawDegrees(deg)` (injected, never discovered by name) |
 
 ## Tier 3 — asset audit
 

@@ -21,6 +21,8 @@ public static class InputActions
     public const string Inventory = "inventory";
     public const string Craft = "craft";
     public const string Cancel = "cancel";
+    public const string QuickSave = "quick_save";
+    public const string QuickLoad = "quick_load";
 
     private static readonly (string Action, Key Key)[] KeyboardBindings =
     [
@@ -35,6 +37,8 @@ public static class InputActions
         (Inventory, Key.Tab),
         (Craft, Key.C),
         (Cancel, Key.Escape),
+        (QuickSave, Key.F5),
+        (QuickLoad, Key.F9),
     ];
 
     private static readonly (string Action, MouseButton Button)[] MouseBindings =

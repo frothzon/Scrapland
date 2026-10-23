@@ -70,4 +70,19 @@ public sealed class SimClock
 
         Advance(ticks * tickSeconds);
     }
+
+    /// <summary>
+    /// Jumps the clock to an absolute time (save/load). Does not raise <see cref="DayStarted"/>: loading a
+    /// game must not replay every day boundary that happened while it was closed.
+    /// </summary>
+    public void RestoreTo(double totalSeconds)
+    {
+        if (double.IsNaN(totalSeconds) || double.IsInfinity(totalSeconds) || totalSeconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(totalSeconds), totalSeconds, "Restored time must be finite and non-negative.");
+        }
+
+        TotalSeconds = totalSeconds;
+        Day = (long)Math.Floor(totalSeconds / SecondsPerDay);
+    }
 }

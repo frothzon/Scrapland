@@ -7,7 +7,7 @@ not been verified in-repo**, so treat them as "local development only" until che
 | Asset folder | Provided metadata | Status |
 |---|---|---|
 | `ChibiCharacters` (Styloo) | `Read Me .txt`, `https://styloo.itch.io/`, Discord invite | Free asset per the readme; **re-check the itch.io page for the exact license (attribution / commercial use / redistribution)** before shipping |
-| `Sprout Lands - UI Pack - Basic pack` | No license file found in folder | **Verify the original download's terms** (font + sprite redistribution rules) |
+| `Sprout Lands - UI Pack - Basic pack` | `read_me.txt` — **author: Cup Nooble**; *"You can modify the assets. You can not redistribute or resale, even if modified. You can only use these assets in non-commercial projects. [Also No NFT's pls]"* | ⚠️ **Non-commercial + no redistribution.** Fine for this learning project; it must never be published with the assets, and shipping a commercial build requires the Premium pack / permission from Cup Nooble (`https://cupnooble.itch.io/sprout-lands-asset-pack`) |
 | `3D Trees` (OBJ set) | No license file found | **Verify source/license** |
 | `3D Animals` (FBX set) | No license file found | **Verify source/license** |
 

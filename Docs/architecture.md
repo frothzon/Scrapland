@@ -55,7 +55,15 @@ why the gate always runs `dotnet build` before launching the engine.
 | `Forager.Core.Economy` | M6 | coins, land-price curve, market spread, bank interest |
 | `Forager.Core.World` | M3 | 16 m plots, seeded biome/node layout, purchase state |
 | `Forager.Core.Agents` | M4 | grid A* + simple state machines for NPCs/enemies |
-| `Forager.Core.Save` | M1/M7 | versioned save DTOs + migrations behind `IPersistence` |
+| `Forager.Core.Save` | **done (M1)** | versioned save DTOs + `IPersistence` + capture/restore |
+| `Forager.Core.Nodes` (`NodeDefinition`, `NodeDatabase`, `ResourceNodeState`) | **done (M1)** | harvestable node data + per-instance hp/respawn state |
+| `Forager.Core.Gathering.HarvestService` | **done (M1)** | tool gating, swing cooldown, depletion, drop rolls, xp/coins |
+| `Forager.Core.Player` (`PlayerProfile`, `ExperienceCurve`) | **done (M1)** | levels, xp curve, coins, inventory ownership |
+| `Forager.Core.Animation.ClipNameResolver` | **done (M1)** | format-independent clip lookup (suffix matching) |
+| `Forager.Core.CameraControl.CameraMath` | **done (M1)** | fixed-camera basis, camera-relative movement, offset maths |
+| `Forager.Core.World.PlotPlacement` | **done (M1)** | deterministic jittered-grid node layout |
+| `Forager.Core.Ui.IconAtlasData` | **done (M1)** | logical icon → sheet cell mapping |
+| `Forager.Core.Config.BalanceConfig` | **done (M1)** | every tunable number, loaded from `Data/balance.json` |
 
 ## 4. Godot layer
 
@@ -114,7 +122,7 @@ Main (Node3D)                     Scripts/Game/Main.cs  — boots input actions,
 | # | Scope | Gate evidence |
 |---|---|---|
 | M0 ✅ | toolchain, guardrails, Core skeleton, headless harness, asset audit | `tools/verify.ps1` exit 0; 41 unit + 3 engine tests; audit 178 models |
-| M1 | player + camera, harvest trees/rocks/bushes, drops, inventory HUD, XP, save | + player/harvest/save tests |
+| M1 ✅ | player + fixed camera, harvest birch/pine/rock/bush with tool gating, drops + magnet, hotbar HUD, XP/coins, save/load | `tools\verify.ps1` exit 0; **141 unit + 14 engine tests**; `selftest-gate.ps1` exit 0 |
 | M2 | crafting stations + recipes + tool tiers + icon atlas | + recipe/atlas tests |
 | M3 | plot grid, buy land, biomes, streaming | + worldgen snapshot tests |
 | M4 | farming, animals, villagers, grid A* | + sim/path tests |
