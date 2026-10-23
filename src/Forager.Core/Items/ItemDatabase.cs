@@ -78,7 +78,9 @@ public sealed class ItemDatabase : IStackLimits
                 dto.MaxStack <= 0 ? 99 : dto.MaxStack,
                 dto.Value,
                 tags,
-                dto.Icon);
+                dto.Icon,
+                string.IsNullOrWhiteSpace(dto.ToolKind) ? null : dto.ToolKind!.Trim().ToLowerInvariant(),
+                dto.ToolTier);
         }
 
         return new ItemDatabase(byId);
@@ -115,6 +117,16 @@ public sealed class ItemDatabase : IStackLimits
             {
                 problems.Add($"Item '{definition.Id}' has no icon.");
             }
+
+            if (!string.IsNullOrWhiteSpace(definition.ToolKind) && definition.ToolTier < 1)
+            {
+                problems.Add($"Item '{definition.Id}' has toolTier {definition.ToolTier}; tiers start at 1.");
+            }
+
+            if (string.IsNullOrWhiteSpace(definition.ToolKind) && definition.HasTag(ToolRules.ToolTag) && ToolRules.Of(definition) is null)
+            {
+                problems.Add($"Item '{definition.Id}' is tagged '{ToolRules.ToolTag}' but has no resolvable tool kind.");
+            }
         }
 
         return problems;
@@ -145,5 +157,11 @@ public sealed class ItemDatabase : IStackLimits
 
         [JsonPropertyName("icon")]
         public string? Icon { get; set; }
+
+        [JsonPropertyName("toolKind")]
+        public string? ToolKind { get; set; }
+
+        [JsonPropertyName("toolTier")]
+        public int ToolTier { get; set; } = 1;
     }
 }

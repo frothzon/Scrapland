@@ -45,8 +45,13 @@ public sealed class NodeDatabaseTests
         var nodes = Nodes;
 
         Assert.False(nodes.Get("bush").RequiresTool);
-        Assert.Equal("wood_axe", nodes.Get("birch").RequiredTool);
-        Assert.Equal("pickaxe", nodes.Get("rock").RequiredTool);
+        Assert.Null(nodes.Get("bush").RequiredTool);
+
+        var birch = nodes.Get("birch").RequiredTool!.Value;
+        Assert.Equal("axe", birch.Kind);
+        Assert.Equal(1, birch.Tier);
+
+        Assert.Equal("pickaxe", nodes.Get("rock").RequiredTool!.Value.Kind);
     }
 
     [Fact]
@@ -88,7 +93,7 @@ public sealed class NodeDatabaseTests
         Assert.Contains(problems, p => p.Contains("hit point", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("respawn", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("coinChance", StringComparison.Ordinal));
-        Assert.Contains(problems, p => p.Contains("unknown tool", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.Contains("laser", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("unknown item", StringComparison.Ordinal));
     }
 

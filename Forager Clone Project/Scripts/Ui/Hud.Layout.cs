@@ -33,7 +33,7 @@ public partial class Hud
         {
             Name = "Status",
             Position = new Vector2(12, 10),
-            Size = new Vector2(220, 64),
+            Size = new Vector2(220, 84),
         };
 
         var statusBox = new VBoxContainer { Name = "StatusBox" };
@@ -50,10 +50,12 @@ public partial class Hud
             CustomMinimumSize = new Vector2(200, 10),
         };
         _coinsLabel = new Label { Name = "Coins", Text = "Coins 0" };
+        _toolLabel = new Label { Name = "Tool", Text = "Tool: hands" };
 
         statusBox.AddChild(_levelLabel);
         statusBox.AddChild(_xpBar);
         statusBox.AddChild(_coinsLabel);
+        statusBox.AddChild(_toolLabel);
         root.AddChild(status);
 
         _messageLabel = new Label

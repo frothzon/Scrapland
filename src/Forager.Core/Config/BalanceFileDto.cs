@@ -17,6 +17,9 @@ internal sealed class BalanceFileDto
     [JsonPropertyName("progression")]
     public ProgressionDto Progression { get; set; } = new();
 
+    [JsonPropertyName("craft")]
+    public CraftDto Craft { get; set; } = new();
+
     [JsonPropertyName("world")]
     public WorldDto World { get; set; } = new();
 
@@ -64,6 +67,13 @@ internal sealed class ProgressionDto
     [JsonPropertyName("maxLevel")] public int MaxLevel { get; set; } = 30;
 
     public ProgressionTuning ToTuning() => new(BaseXp, CurveExponent, MaxLevel);
+}
+
+internal sealed class CraftDto
+{
+    [JsonPropertyName("stationRadius")] public double StationRadius { get; set; } = 3.0;
+
+    public CraftTuning ToTuning() => new(StationRadius);
 }
 
 internal sealed class WorldDto

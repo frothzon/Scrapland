@@ -20,12 +20,14 @@ Logs land in `artifacts\` (`headless-tests.log`, `asset-audit.log`, `gate-selfte
 
 ## Tier 1 — `dotnet test` (no engine)
 
-141 tests. Coverage: inventory stacking/overflow/atomicity, item data validation (loads the **real**
-`Data/items.json`), node data validation (`Data/nodes.json`: tools, drops, mesh paths, caps), balance
-validation (`Data/balance.json`), harvest rules (tool gating, cooldown, depletion, drop ranges, respawn),
-XP curve + profile level-ups/coins, save round-trip + version rejection, seeded RNG/fork determinism,
-clip-name resolution for all four asset naming styles, fixed-camera maths, icon-atlas bounds, deterministic
-plot placement, sim clock rollover/night window, architecture guards (Core has no Godot reference).
+189 tests. Coverage: inventory stacking/overflow/atomicity/capacity + snapshot rollback, item data validation (loads
+the **real** `Data/items.json`), tool kind/tier gating and best-tool selection, node data validation
+(`Data/nodes.json`: tools, tiers, drops, mesh paths, caps), balance validation (`Data/balance.json`), harvest
+rules (tool gating, cooldown, depletion, drop ranges, respawn), recipe data validation (stations, unlocks,
+cycles, unknown items), recipe book unlock semantics, craft atomicity (missing inputs, wrong station, locked,
+no-space rollback), crafting-content reachability, XP curve + profile level-ups/coins, save round-trip (v2 +
+v1 payloads), seeded RNG/fork determinism, clip-name resolution for all four asset naming styles, fixed-camera
+maths, icon-atlas bounds, deterministic plot placement, sim clock rollover/night window, architecture guards.
 
 Why it matters: ~90 % of future rules (crafting, skills, economy, worldgen) can be tested in milliseconds
 with no engine in the loop.
@@ -62,6 +64,13 @@ public partial class PlayerMovementTests : HeadlessTest
 Determinism rules: step physics frames (never `CreateTimer`), drive time through `SimClock`, seed through
 `context.Rng`/`--seed`, assert with tolerances (`AssertNear`) for anything physics-derived.
 
+M2 suite (22 tests). Added on top of the M1 set below: `StationProximityTests` (data-driven station radius),
+`StationInteractTests` (E opens the workbench, prompt text, close clears state), `UiBlocksMovementTests`
+(panel open freezes movement, closing resumes), `CraftingPanelTests` (recipes listed, have/need text,
+craft via row, level-locked row disabled with "Lv 2"), `InventoryPanelTests` (24 slots, icons, UI flag),
+`ToolTierTests` (stone axe outranks wood axe; gold vein needs a tier-2 pickaxe), `OreNodeTests` (iron vein →
+ore in inventory), `CraftingSaveTests` (crafted set survives save/load).
+
 M1 suite (14 tests): `HarnessSmokeTests` (headless enforcement, frame stepping, Core usable from the
 engine), `InputActionsTests` (code-registered actions are idempotent), `ContentLoadTests` (`res://Data/*.json`
 parse through the engine, `Main.tscn` builds the slice), `MovementTests` (walk distance, run > walk, fixed
@@ -80,6 +89,9 @@ Test seams that make this possible (all documented in code):
 | No wall clock | `GameSession.AdvanceClock = false`, then `Session.Clock.Advance(...)` |
 | No real save slot | `session.Persistence = new InMemoryPersistence()` |
 | Known camera | `CameraRig.SetYawDegrees(deg)` (injected, never discovered by name) |
+| No mouse for stations | `Interactor.TryInteractCurrentTarget()` |
+| No UI clicks | `CraftingPanel.TryCraft(rowIndex)` after `session.OpenCrafting(kind)` |
+| Free items | `SliceFixture.GiveItems(("wood", 6), …)` |
 
 ## Tier 3 — asset audit
 

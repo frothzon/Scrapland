@@ -21,9 +21,11 @@ public partial class Hud : CanvasLayer
 
     private Label _levelLabel = null!;
     private Label _coinsLabel = null!;
+    private Label _toolLabel = null!;
     private Label _messageLabel = null!;
     private ProgressBar _xpBar = null!;
 
+    private GameSession? _session;
     private PlayerProfile? _profile;
     private ItemDatabase? _items;
     private IconAtlas? _atlas;
@@ -61,6 +63,7 @@ public partial class Hud : CanvasLayer
         _profile = session.Profile;
         _items = session.Items;
         _atlas = new IconAtlas(session.Icons);
+        _session = session;
         Interactor = interactor;
 
         _profile.Inventory.Changed += Refresh;
@@ -75,9 +78,16 @@ public partial class Hud : CanvasLayer
 
     public override void _Process(double delta)
     {
-        if (Interactor is not null && _messageLabel.Text != Interactor.Message)
+        if (Interactor is null)
         {
-            _messageLabel.Text = Interactor.Message;
+            return;
+        }
+
+        // Station hint wins over harvest feedback.
+        var text = string.IsNullOrEmpty(Interactor.Prompt) ? Interactor.Message : Interactor.Prompt;
+        if (_messageLabel.Text != text)
+        {
+            _messageLabel.Text = text;
         }
     }
 
@@ -90,6 +100,9 @@ public partial class Hud : CanvasLayer
 
         _levelLabel.Text = $"Lv {_profile.Level}";
         _coinsLabel.Text = $"Coins {_profile.Coins}";
+        _toolLabel.Text = _session?.EquippedToolId is { } toolId && _items.TryGet(toolId, out var tool)
+            ? $"Tool: {tool.Name}"
+            : "Tool: hands";
         _xpBar.MaxValue = 1;
         _xpBar.Value = _profile.LevelProgress;
 

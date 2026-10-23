@@ -25,6 +25,7 @@ public static class PlayerFactory
             Name = "Player",
             Tuning = balance.Player,
             Rig = rig,
+            Session = session,
             CollisionLayer = PlayerLayer,
             CollisionMask = WorldMask,
             Position = position ?? Vector3.Zero,

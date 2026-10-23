@@ -25,9 +25,12 @@
     "curveExponent": 1.5,
     "maxLevel": 30
   },
+  "craft": {
+    "stationRadius": 3.0
+  },
   "world": {
     "seed": 1337,
-    "nodeCount": 14,
+    "nodeCount": 20,
     "plotSize": 16.0
   },
   "startingItems": ["wood_axe", "pickaxe"]

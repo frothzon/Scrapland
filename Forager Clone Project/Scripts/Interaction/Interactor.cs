@@ -1,4 +1,5 @@
 using Forager.Core.Gathering;
+using ForagerClone.Crafting;
 using ForagerClone.Game;
 using Godot;
 
@@ -18,6 +19,12 @@ public partial class Interactor : Node3D
     public RayCast3D Ray { get; private set; } = null!;
 
     public IInteractable? CurrentTarget { get; private set; }
+
+    /// <summary>Raw collider under the aim ray (may be a station, which is not harvestable).</summary>
+    public Node3D? CurrentCollider { get; private set; }
+
+    /// <summary>Contextual hint for the HUD (e.g. "E: Workbench"), empty when there is none.</summary>
+    public string Prompt { get; private set; } = string.Empty;
 
     /// <summary>Feedback for the HUD ("Needs a wood_axe", "Depleted", …).</summary>
     public string Message { get; private set; } = string.Empty;
@@ -95,8 +102,22 @@ public partial class Interactor : Node3D
         EnsureRay();
         Ray.ForceRaycastUpdate();
 
-        var collider = Ray.GetCollider() as IInteractable;
-        CurrentTarget = collider is not null && IsWithinReach(collider) ? collider : null;
+        CurrentCollider = Ray.GetCollider() as Node3D;
+
+        var harvestable = CurrentCollider as IInteractable;
+        CurrentTarget = harvestable is not null && IsWithinReach(harvestable) ? harvestable : null;
+
+        Prompt = CurrentCollider switch
+        {
+            Station3D station when IsStationInReach(station) => $"E: {station.DisplayName}",
+            _ => string.Empty,
+        };
+    }
+
+    private bool IsStationInReach(Station3D station)
+    {
+        var player = Session?.Player;
+        return player is null || station.GlobalPosition.DistanceTo(player.GlobalPosition) <= MaxReachMeters;
     }
 
     private bool IsWithinReach(IInteractable target)
@@ -127,17 +148,51 @@ public partial class Interactor : Node3D
             return;
         }
 
-        var wantsHarvest = Input.IsActionPressed(InputActions.Use) || Input.IsActionPressed(InputActions.Interact);
-        if (wantsHarvest)
+        if (Session.UiOpen)
+        {
+            return;
+        }
+
+        if (Input.IsActionJustPressed(InputActions.Interact))
+        {
+            TryInteractCurrentTarget();
+            return;
+        }
+
+        if (Input.IsActionPressed(InputActions.Use))
         {
             TryHarvestCurrentTarget();
         }
     }
 
+    /// <summary>
+    /// E / context action: opens a station when one is aimed at, otherwise swings at a node.
+    /// Returns true when something happened.
+    /// </summary>
+    public bool TryInteractCurrentTarget()
+    {
+        if (Session is null || !Session.IsBooted || Session.UiOpen)
+        {
+            return false;
+        }
+
+        RefreshTarget();
+
+        if (CurrentCollider is Station3D station && IsStationInReach(station))
+        {
+            station.Pulse();
+            Session.OpenCrafting(station.Kind);
+            Message = $"{station.DisplayName} opened";
+            return true;
+        }
+
+        return TryHarvestCurrentTarget()?.Success == true;
+    }
+
     /// <summary>Harvests the current target once. Returns null when there is nothing to harvest.</summary>
     public HarvestOutcome? TryHarvestCurrentTarget()
     {
-        if (Session is null || !Session.IsBooted)
+        if (Session is null || !Session.IsBooted || Session.UiOpen)
         {
             return null;
         }
@@ -153,7 +208,7 @@ public partial class Interactor : Node3D
         var outcome = Session.Harvest.TryHarvest(
             target.Definition,
             target.State,
-            Session.EquippedToolId,
+            Session.ToolFor(target.Definition.RequiredTool),
             Session.NowSeconds);
 
         LastOutcome = outcome;

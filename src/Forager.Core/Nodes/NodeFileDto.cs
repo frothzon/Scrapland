@@ -17,6 +17,7 @@ internal sealed class NodeDto
     [JsonPropertyName("meshPath")] public string? MeshPath { get; set; }
     [JsonPropertyName("scale")] public double Scale { get; set; } = 1;
     [JsonPropertyName("requiredTool")] public string? RequiredTool { get; set; }
+    [JsonPropertyName("toolTier")] public int ToolTier { get; set; } = 1;
     [JsonPropertyName("hitPoints")] public int HitPoints { get; set; } = 1;
     [JsonPropertyName("respawnSeconds")] public double RespawnSeconds { get; set; }
     [JsonPropertyName("xp")] public int Xp { get; set; }

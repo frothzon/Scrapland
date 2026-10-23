@@ -20,6 +20,9 @@ public partial class PlayerController : CharacterBody3D
 
     public CameraRig? Rig { get; set; }
 
+    /// <summary>Set by the factory; used to suspend input while a panel is open.</summary>
+    public GameSession? Session { get; set; }
+
     /// <summary>Last world-space movement direction (unit length or zero).</summary>
     public Vector3 MoveDirection { get; private set; }
 
@@ -64,11 +67,16 @@ public partial class PlayerController : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
-        var input = IsInjectedInput
-            ? _input
-            : Input.GetVector(InputActions.MoveLeft, InputActions.MoveRight, InputActions.MoveForward, InputActions.MoveBack);
+        // A panel owns the input while it is open: no movement, no jumping (LL: UI-open gating).
+        var uiOpen = Session?.UiOpen == true;
 
-        var running = IsInjectedInput ? _run : Input.IsActionPressed(InputActions.Run);
+        var input = uiOpen
+            ? Vector2.Zero
+            : IsInjectedInput
+                ? _input
+                : Input.GetVector(InputActions.MoveLeft, InputActions.MoveRight, InputActions.MoveForward, InputActions.MoveBack);
+
+        var running = !uiOpen && (IsInjectedInput ? _run : Input.IsActionPressed(InputActions.Run));
         IsRunning = running;
 
         var yaw = Rig?.YawDegrees ?? 0;
@@ -87,7 +95,7 @@ public partial class PlayerController : CharacterBody3D
                 vertical = 0;
             }
 
-            if (_jumpQueued || (!IsInjectedInput && Input.IsActionJustPressed(InputActions.Jump)))
+            if (!uiOpen && (_jumpQueued || (!IsInjectedInput && Input.IsActionJustPressed(InputActions.Jump))))
             {
                 vertical = (float)Tuning.JumpVelocity;
             }

@@ -1,3 +1,4 @@
+using Forager.Core.Crafting;
 using Forager.Core.Data;
 using Forager.Core.Inventories;
 using Forager.Core.Items;
@@ -58,7 +59,7 @@ public sealed class SaveSerializerTests
     {
         var json = SaveSerializer.ToJson(SaveSerializer.Capture(NewProfile(), new SimClock(), 1337));
 
-        Assert.Contains("\"version\": 1", json);
+        Assert.Contains("\"version\": 2", json);
         Assert.Contains("\"seed\": 1337", json);
     }
 
@@ -122,5 +123,42 @@ public sealed class SaveSerializerTests
 
         clock.Advance(50);
         Assert.Equal(new long[] { 4 }, days);
+    }
+
+    [Fact]
+    public void Capture_RoundTripsCraftedRecipes()
+    {
+        var profile = NewProfile();
+        var book = new RecipeBook();
+        book.RecordCrafted("plank");
+        book.RecordCrafted("iron_ingot");
+
+        var save = SaveSerializer.Capture(profile, new SimClock(), seed: 7, book);
+        var loadedBook = new RecipeBook();
+        SaveSerializer.Restore(SaveSerializer.FromJson(SaveSerializer.ToJson(save)), NewProfile(), new SimClock(), loadedBook);
+
+        Assert.True(loadedBook.HasCrafted("plank"));
+        Assert.True(loadedBook.HasCrafted("iron_ingot"));
+        Assert.Equal(2, loadedBook.CraftedCount);
+    }
+
+    [Fact]
+    public void VersionOneSave_StillLoads_WithEmptyCraftState()
+    {
+        const string v1 = """
+            { "version": 1, "seed": 5, "simSeconds": 12.5, "level": 2, "xp": 3, "coins": 4,
+              "slots": [ { "itemId": "wood", "amount": 6 } ], "nodes": [] }
+            """;
+
+        var save = SaveSerializer.FromJson(v1);
+        var book = new RecipeBook();
+        var profile = NewProfile();
+
+        SaveSerializer.Restore(save, profile, new SimClock(), book);
+
+        Assert.Equal(2, profile.Level);
+        Assert.Equal(6, profile.Inventory.Count("wood"));
+        Assert.Empty(save.CraftedRecipes);
+        Assert.Equal(0, book.CraftedCount);
     }
 }

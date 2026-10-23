@@ -27,6 +27,8 @@ public sealed record GatherTuning(
 
 public sealed record ProgressionTuning(int BaseXp, double CurveExponent, int MaxLevel);
 
+public sealed record CraftTuning(double StationRadius);
+
 public sealed record WorldTuning(int Seed, int NodeCount, double PlotSize);
 
 /// <summary>
@@ -49,6 +51,7 @@ public sealed class BalanceConfig
         CameraTuning camera,
         GatherTuning gather,
         ProgressionTuning progression,
+        CraftTuning craft,
         WorldTuning world,
         IReadOnlyList<string> startingItems)
     {
@@ -56,6 +59,7 @@ public sealed class BalanceConfig
         Camera = camera;
         Gather = gather;
         Progression = progression;
+        Craft = craft;
         World = world;
         StartingItems = startingItems;
     }
@@ -67,6 +71,8 @@ public sealed class BalanceConfig
     public GatherTuning Gather { get; }
 
     public ProgressionTuning Progression { get; }
+
+    public CraftTuning Craft { get; }
 
     public WorldTuning World { get; }
 
@@ -104,6 +110,7 @@ public sealed class BalanceConfig
             dto.Camera.ToTuning(),
             dto.Gather.ToTuning(),
             dto.Progression.ToTuning(),
+            dto.Craft.ToTuning(),
             dto.World.ToTuning(),
             dto.StartingItems is null ? Array.Empty<string>() : dto.StartingItems.ToArray());
     }
@@ -131,6 +138,8 @@ public sealed class BalanceConfig
         if (Progression.BaseXp <= 0) problems.Add("progression.baseXp must be positive.");
         if (Progression.CurveExponent <= 0) problems.Add("progression.curveExponent must be positive.");
         if (Progression.MaxLevel < 1) problems.Add("progression.maxLevel must be at least 1.");
+
+        if (Craft.StationRadius <= 0) problems.Add("craft.stationRadius must be positive.");
 
         if (World.PlotSize <= 0) problems.Add("world.plotSize must be positive.");
         if (World.NodeCount < 0) problems.Add("world.nodeCount cannot be negative.");

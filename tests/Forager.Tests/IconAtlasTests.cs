@@ -17,7 +17,15 @@ public sealed class IconAtlasTests
         var problems = atlas.Validate(Items);
         Assert.True(problems.Count == 0, "atlas problems: " + string.Join("; ", problems));
         Assert.NotEmpty(atlas.Sheets);
-        Assert.True(atlas.Icons.Count >= Items.Count);
+
+        // Items may share an icon (e.g. charcoal reuses icon_coal), so assert coverage of *distinct* icons.
+        var used = Items.All
+            .Select(item => item.Icon)
+            .Where(icon => !string.IsNullOrWhiteSpace(icon))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+        Assert.True(atlas.Icons.Count >= used, $"atlas maps {atlas.Icons.Count} icons but items use {used}");
     }
 
     [Fact]

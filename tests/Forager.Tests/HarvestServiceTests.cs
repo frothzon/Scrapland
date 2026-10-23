@@ -1,5 +1,6 @@
 using Forager.Core.Config;
 using Forager.Core.Gathering;
+using Forager.Core.Items;
 using Forager.Core.Nodes;
 using Forager.Core.Randomness;
 
@@ -7,20 +8,24 @@ namespace Forager.Tests;
 
 public sealed class HarvestServiceTests
 {
-    private static readonly GatherTuning Tuning = new(
-        RangeMeters: 12,
-        SwingSeconds: 0.35,
-        MagnetRadius: 3,
-        MagnetSpeed: 9);
+    private static readonly GatherTuning Tuning = new(12, 0.35, 3, 9);
+    private static readonly ToolSpec WoodAxe = new("axe", 1);
+    private static readonly ToolSpec IronAxe = new("axe", 3);
 
-    private static NodeDefinition Tree(int hitPoints = 3, string? tool = "wood_axe", double coinChance = 0)
+    /// <summary>Test node needing `axe` at tier 1 by default.</summary>
+    private static NodeDefinition Tree(
+        int hitPoints = 3,
+        string? toolKind = "axe",
+        int toolTier = 1,
+        double coinChance = 0)
         => new(
             "test_tree",
             "tree",
             "Test Tree",
             "res://Assets/x.obj",
             1,
-            tool,
+            toolKind,
+            toolTier,
             hitPoints,
             RespawnSeconds: 10,
             Xp: 8,
@@ -36,7 +41,7 @@ public sealed class HarvestServiceTests
         var definition = Tree();
         var state = new ResourceNodeState(definition);
 
-        var outcome = Service().TryHarvest(definition, state, equippedToolId: null, nowSeconds: 0);
+        var outcome = Service().TryHarvest(definition, state, equippedTool: null, nowSeconds: 0);
 
         Assert.Equal(HarvestStatus.MissingTool, outcome.Status);
         Assert.Equal(3, state.HitPointsLeft);
@@ -44,24 +49,51 @@ public sealed class HarvestServiceTests
     }
 
     [Fact]
-    public void WrongTool_DoesNothing()
+    public void WrongToolKind_DoesNothing()
     {
         var definition = Tree();
         var state = new ResourceNodeState(definition);
 
-        var outcome = Service().TryHarvest(definition, state, "pickaxe", 0);
+        var outcome = Service().TryHarvest(definition, state, new ToolSpec("pickaxe", 3), 0);
 
         Assert.Equal(HarvestStatus.MissingTool, outcome.Status);
         Assert.Equal(3, state.HitPointsLeft);
     }
 
     [Fact]
-    public void CorrectTool_IsCaseInsensitive()
+    public void HigherTierTool_SatisfiesLowerTierNode()
     {
         var definition = Tree();
         var state = new ResourceNodeState(definition);
 
-        var outcome = Service().TryHarvest(definition, state, "WOOD_AXE", 0);
+        var outcome = Service().TryHarvest(definition, state, IronAxe, 0);
+
+        Assert.True(outcome.Success);
+        Assert.Equal(2, state.HitPointsLeft);
+    }
+
+    [Fact]
+    public void LowerTierTool_CannotHarvestHigherTierNode()
+    {
+        var definition = Tree(toolTier: 2);
+        var state = new ResourceNodeState(definition);
+
+        var outcome = Service().TryHarvest(definition, state, WoodAxe, 0);
+
+        Assert.Equal(HarvestStatus.MissingTool, outcome.Status);
+        Assert.Equal(3, state.HitPointsLeft);
+
+        var withStoneAxe = Service().TryHarvest(definition, state, new ToolSpec("axe", 2), 0);
+        Assert.True(withStoneAxe.Success);
+    }
+
+    [Fact]
+    public void ToolKindMatch_IsCaseInsensitive()
+    {
+        var definition = Tree();
+        var state = new ResourceNodeState(definition);
+
+        var outcome = Service().TryHarvest(definition, state, new ToolSpec("AXE", 1), 0);
 
         Assert.True(outcome.Success);
         Assert.Equal(2, state.HitPointsLeft);
@@ -70,7 +102,7 @@ public sealed class HarvestServiceTests
     [Fact]
     public void ToolFreeNode_WorksWithBareHands()
     {
-        var definition = Tree(hitPoints: 1, tool: null);
+        var definition = Tree(hitPoints: 1, toolKind: null);
         var state = new ResourceNodeState(definition);
 
         var outcome = Service().TryHarvest(definition, state, null, 0);
@@ -87,9 +119,9 @@ public sealed class HarvestServiceTests
         var state = new ResourceNodeState(definition);
         var service = Service();
 
-        var first = service.TryHarvest(definition, state, "wood_axe", 0);
-        var second = service.TryHarvest(definition, state, "wood_axe", 1);
-        var third = service.TryHarvest(definition, state, "wood_axe", 2);
+        var first = service.TryHarvest(definition, state, WoodAxe, 0);
+        var second = service.TryHarvest(definition, state, WoodAxe, 1);
+        var third = service.TryHarvest(definition, state, WoodAxe, 2);
 
         Assert.True(first.Success);
         Assert.False(first.Felled);
@@ -110,7 +142,7 @@ public sealed class HarvestServiceTests
             var state = new ResourceNodeState(definition);
 
             var outcome = new HarvestService(Tuning, new SeededRng(seed))
-                .TryHarvest(definition, state, "wood_axe", 0);
+                .TryHarvest(definition, state, WoodAxe, 0);
 
             var drop = Assert.Single(outcome.Drops);
             Assert.Equal("wood", drop.ItemId);
@@ -125,9 +157,9 @@ public sealed class HarvestServiceTests
         var state = new ResourceNodeState(definition);
         var service = Service(swingSeconds: 0.35);
 
-        service.TryHarvest(definition, state, "wood_axe", 0);
-        var tooSoon = service.TryHarvest(definition, state, "wood_axe", 0.1);
-        var allowed = service.TryHarvest(definition, state, "wood_axe", 0.36);
+        service.TryHarvest(definition, state, WoodAxe, 0);
+        var tooSoon = service.TryHarvest(definition, state, WoodAxe, 0.1);
+        var allowed = service.TryHarvest(definition, state, WoodAxe, 0.36);
 
         Assert.Equal(HarvestStatus.OnCooldown, tooSoon.Status);
         Assert.True(allowed.Success);
@@ -141,9 +173,9 @@ public sealed class HarvestServiceTests
         var state = new ResourceNodeState(definition);
         var service = Service();
 
-        service.TryHarvest(definition, state, "wood_axe", 0);
-        var whileDepleted = service.TryHarvest(definition, state, "wood_axe", 5);
-        var afterRespawn = service.TryHarvest(definition, state, "wood_axe", 10.1);
+        service.TryHarvest(definition, state, WoodAxe, 0);
+        var whileDepleted = service.TryHarvest(definition, state, WoodAxe, 5);
+        var afterRespawn = service.TryHarvest(definition, state, WoodAxe, 10.1);
 
         Assert.Equal(HarvestStatus.Depleted, whileDepleted.Status);
         Assert.True(afterRespawn.Success);
@@ -157,10 +189,11 @@ public sealed class HarvestServiceTests
         var always = Tree(hitPoints: 1, coinChance: 1);
         var never = Tree(hitPoints: 1, coinChance: 0);
 
-        var withCoins = Service().TryHarvest(always, new ResourceNodeState(always), "wood_axe", 0);
-        var withoutCoins = Service().TryHarvest(never, new ResourceNodeState(never), "wood_axe", 0);
+        var withCoins = Service().TryHarvest(always, new ResourceNodeState(always), WoodAxe, 0);
+        var withoutCoins = Service().TryHarvest(never, new ResourceNodeState(never), WoodAxe, 0);
 
         Assert.Equal(1, withCoins.Coins);
         Assert.Equal(0, withoutCoins.Coins);
     }
 }
+

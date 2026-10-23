@@ -81,7 +81,8 @@ public sealed class NodeDatabase
                 string.IsNullOrWhiteSpace(dto.DisplayName) ? id : dto.DisplayName!,
                 dto.MeshPath?.Trim() ?? string.Empty,
                 dto.Scale <= 0 ? 1d : dto.Scale,
-                string.IsNullOrWhiteSpace(dto.RequiredTool) ? null : dto.RequiredTool,
+                string.IsNullOrWhiteSpace(dto.RequiredTool) ? null : dto.RequiredTool!.Trim().ToLowerInvariant(),
+                dto.ToolTier,
                 dto.HitPoints,
                 dto.RespawnSeconds,
                 dto.Xp,
@@ -138,9 +139,14 @@ public sealed class NodeDatabase
                 problems.Add($"Node '{node.Id}' coinChance must be within 0..1 ({node.CoinChance}).");
             }
 
-            if (node.RequiresTool && !items.Contains(node.RequiredTool!))
+            if (node.RequiredToolTier < 1)
             {
-                problems.Add($"Node '{node.Id}' requires unknown tool '{node.RequiredTool}'.");
+                problems.Add($"Node '{node.Id}' has toolTier {node.RequiredToolTier}; tiers start at 1.");
+            }
+
+            if (node.RequiredTool is { } required && !HasToolAtTier(items, required))
+            {
+                problems.Add($"Node '{node.Id}' requires tool '{required.Kind}' at tier {required.Tier}, which no item provides.");
             }
 
             if (node.Drops.Count == 0)
@@ -163,5 +169,20 @@ public sealed class NodeDatabase
         }
 
         return problems;
+    }
+
+    private static bool HasToolAtTier(ItemDatabase items, ToolSpec required)
+    {
+        foreach (var item in items.All)
+        {
+            if (ToolRules.Of(item) is { } spec
+                && string.Equals(spec.Kind, required.Kind, StringComparison.OrdinalIgnoreCase)
+                && spec.Tier >= required.Tier)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

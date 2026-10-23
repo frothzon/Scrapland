@@ -1,5 +1,5 @@
 {
-  "$schema": "./schemas/items.schema.json",
+  "$comment": "Item data. toolKind/toolTier drive tool gating; tags stay for grouping.",
   "items": [
     { "id": "wood", "name": "Wood", "maxStack": 99, "value": 2, "tags": ["resource", "wood"], "icon": "icon_wood" },
     { "id": "stone", "name": "Stone", "maxStack": 99, "value": 2, "tags": ["resource", "stone"], "icon": "icon_stone" },
@@ -16,8 +16,23 @@
     { "id": "milk", "name": "Milk", "maxStack": 99, "value": 6, "tags": ["food", "animal"], "icon": "icon_milk" },
     { "id": "egg", "name": "Egg", "maxStack": 99, "value": 4, "tags": ["food", "animal"], "icon": "icon_egg" },
     { "id": "wool", "name": "Wool", "maxStack": 99, "value": 5, "tags": ["resource", "animal"], "icon": "icon_wool" },
-    { "id": "wood_axe", "name": "Wood Axe", "maxStack": 1, "value": 10, "tags": ["tool", "axe"], "icon": "icon_axe" },
-    { "id": "pickaxe", "name": "Pickaxe", "maxStack": 1, "value": 12, "tags": ["tool", "pickaxe"], "icon": "icon_pickaxe" },
-    { "id": "sword", "name": "Sword", "maxStack": 1, "value": 15, "tags": ["tool", "weapon"], "icon": "icon_sword" }
+
+    { "id": "plank", "name": "Plank", "maxStack": 99, "value": 4, "tags": ["material", "wood"], "icon": "icon_plank" },
+    { "id": "rope", "name": "Rope", "maxStack": 99, "value": 4, "tags": ["material", "plant"], "icon": "icon_rope" },
+    { "id": "charcoal", "name": "Charcoal", "maxStack": 99, "value": 5, "tags": ["material", "fuel"], "icon": "icon_coal" },
+    { "id": "iron_ingot", "name": "Iron Ingot", "maxStack": 99, "value": 18, "tags": ["material", "metal"], "icon": "icon_iron_ingot" },
+    { "id": "gold_ingot", "name": "Gold Ingot", "maxStack": 99, "value": 32, "tags": ["material", "metal"], "icon": "icon_gold_ore" },
+
+    { "id": "wood_axe", "name": "Wood Axe", "maxStack": 1, "value": 10, "tags": ["tool", "axe"], "icon": "icon_axe", "toolKind": "axe", "toolTier": 1 },
+    { "id": "pickaxe", "name": "Pickaxe", "maxStack": 1, "value": 12, "tags": ["tool", "pickaxe"], "icon": "icon_pickaxe", "toolKind": "pickaxe", "toolTier": 1 },
+    { "id": "sword", "name": "Sword", "maxStack": 1, "value": 15, "tags": ["tool", "weapon"], "icon": "icon_sword", "toolKind": "weapon", "toolTier": 1 },
+    { "id": "stone_axe", "name": "Stone Axe", "maxStack": 1, "value": 24, "tags": ["tool", "axe"], "icon": "icon_stone_axe", "toolKind": "axe", "toolTier": 2 },
+    { "id": "stone_pickaxe", "name": "Stone Pickaxe", "maxStack": 1, "value": 24, "tags": ["tool", "pickaxe"], "icon": "icon_stone_pickaxe", "toolKind": "pickaxe", "toolTier": 2 },
+    { "id": "iron_axe", "name": "Iron Axe", "maxStack": 1, "value": 60, "tags": ["tool", "axe"], "icon": "icon_iron_axe", "toolKind": "axe", "toolTier": 3 },
+    { "id": "iron_pickaxe", "name": "Iron Pickaxe", "maxStack": 1, "value": 60, "tags": ["tool", "pickaxe"], "icon": "icon_iron_pickaxe", "toolKind": "pickaxe", "toolTier": 3 },
+    { "id": "iron_sword", "name": "Iron Sword", "maxStack": 1, "value": 55, "tags": ["tool", "weapon"], "icon": "icon_sword", "toolKind": "weapon", "toolTier": 2 },
+
+    { "id": "workbench_kit", "name": "Workbench Kit", "maxStack": 1, "value": 30, "tags": ["building"], "icon": "icon_workbench" },
+    { "id": "furnace_kit", "name": "Furnace Kit", "maxStack": 1, "value": 40, "tags": ["building"], "icon": "icon_furnace" }
   ]
 }

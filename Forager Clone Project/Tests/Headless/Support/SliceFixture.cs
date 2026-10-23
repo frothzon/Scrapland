@@ -1,4 +1,6 @@
+using Forager.Core.Crafting;
 using ForagerClone.Cameras;
+using ForagerClone.Crafting;
 using ForagerClone.Game;
 using ForagerClone.Interaction;
 using ForagerClone.Nodes;
@@ -89,6 +91,26 @@ public sealed class SliceFixture
         interactor.Configure(session.Balance.Gather.RangeMeters);
 
         return new SliceFixture(root, worldRoot, session, rig, player, interactor);
+    }
+
+    public Station3D SpawnStation(StationKind kind, Vector3 position)
+    {
+        var station = StationFactory.Create(kind, Session.Balance.Craft.StationRadius, position);
+        WorldRoot.AddChild(station);
+
+        var stations = Session.WorldStations.ToList();
+        stations.Add(station);
+        Session.RegisterStations(stations);
+        return station;
+    }
+
+    /// <summary>Grants items directly (test convenience, bypasses gathering).</summary>
+    public void GiveItems(params (string ItemId, int Amount)[] items)
+    {
+        foreach (var (itemId, amount) in items)
+        {
+            Session.Profile.Inventory.Add(itemId, amount);
+        }
     }
 
     /// <summary>Creates one node of a known type at a known spot (deterministic alternative to the generator).</summary>

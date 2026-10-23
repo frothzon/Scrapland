@@ -69,6 +69,49 @@ public sealed class Inventory
 
     public bool Has(string itemId, int amount) => amount > 0 && Count(itemId) >= amount;
 
+    /// <summary>How many more of <paramref name="itemId"/> would fit right now (partial stacks + free slots).</summary>
+    public int CapacityFor(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+        {
+            return 0;
+        }
+
+        var maxStack = _limits.MaxStack(itemId);
+        var capacity = 0;
+
+        for (var i = 0; i < SlotCount; i++)
+        {
+            if (_amounts[i] <= 0)
+            {
+                capacity += maxStack;
+            }
+            else if (IsSameItem(i, itemId) && _amounts[i] < maxStack)
+            {
+                capacity += maxStack - _amounts[i];
+            }
+        }
+
+        return capacity;
+    }
+
+    /// <summary>True when <paramref name="amount"/> of the item fits without dropping anything.</summary>
+    public bool CanAdd(string itemId, int amount) => amount > 0 && CapacityFor(itemId) >= amount;
+
+    /// <summary>All-or-nothing add. Returns false and changes nothing when the items would not fit.</summary>
+    public bool TryAdd(string itemId, int amount, out int added)
+    {
+        added = 0;
+        if (!CanAdd(itemId, amount))
+        {
+            return false;
+        }
+
+        var leftover = Add(itemId, amount);
+        added = amount - leftover;
+        return leftover == 0;
+    }
+
     /// <summary>Adds items, filling partial stacks first. Returns the amount that did not fit.</summary>
     public int Add(string itemId, int amount)
     {
@@ -176,6 +219,28 @@ public sealed class Inventory
         Array.Clear(_amounts, 0, _amounts.Length);
         Changed?.Invoke();
     }
+
+    /// <summary>
+    /// Copy of the slot contents. Used to make multi-step operations (crafting) all-or-nothing:
+    /// capture, mutate, and <see cref="Restore"/> if a later step fails.
+    /// </summary>
+    public Snapshot Capture() => new((string[])_itemIds.Clone(), (int[])_amounts.Clone());
+
+    /// <summary>Restores a snapshot taken by <see cref="Capture"/>.</summary>
+    public void Restore(Snapshot snapshot)
+    {
+        if (snapshot.ItemIds.Length != SlotCount || snapshot.Amounts.Length != SlotCount)
+        {
+            throw new ArgumentException("Snapshot does not match this inventory's slot count.", nameof(snapshot));
+        }
+
+        Array.Copy(snapshot.ItemIds, _itemIds, SlotCount);
+        Array.Copy(snapshot.Amounts, _amounts, SlotCount);
+        Changed?.Invoke();
+    }
+
+    /// <summary>Opaque slot snapshot (arrays are copies, safe to keep across mutations).</summary>
+    public readonly record struct Snapshot(string[] ItemIds, int[] Amounts);
 
     private bool IsSameItem(int index, string itemId)
         => string.Equals(_itemIds[index], itemId, StringComparison.OrdinalIgnoreCase);

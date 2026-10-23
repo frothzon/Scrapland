@@ -50,8 +50,14 @@ land; a four-branch perk **board** (Economy / Industry / Farming / Magic) unlock
 - Tests: `WalkDistance`, `CameraRelativeMoveForward`, `AimRayHitsNode`, `HarvestTreeYieldsWood`,
   `MissingToolDoesNothing`, `NodeRespawnsAfterSimTicks`, `SaveLoadRoundTrip`, `ClipResolutionSuffix`.
 
-**M2 — crafting**: workbench + furnace, tool tiers (axe → iron axe), `CraftGating` (station/unlock/inputs),
-`RecipeGraphAcyclic`, `AllIconsInBounds`.
+**M2 — crafting** ✅ (instant craft, pre-placed stations, level-gated recipes)
+- Stations: workbench + furnace pre-placed near spawn; `E` opens the station panel, `Esc` closes.
+- 14 recipes in `Data/recipes.json` (hand → workbench → furnace), unlocks via `level:N` / `after:<recipe>`.
+- Tool tiers: axe/pickaxe/weapon × tier 1–3; nodes ask for kind + minimum tier, so iron tools supersede wood.
+- Ore loop: coal seam → charcoal/ingots via furnace → iron tools unlock the gold vein (pickaxe t2).
+- UI: craft panel (have/need, lock reasons) + 24-slot inventory panel; both suspend player input.
+- Verified by 189 unit + 22 headless tests, including a data-reachability test that proves every recipe input
+  is obtainable and every tool tier a node demands can be built.
 
 **M3 — land & biome**: plot purchase curve (`cost = base × 1.35^n`), biome tables, streaming activation;
 `WorldgenSnapshot` for fixed seed, `BuyPlotUnlocksNodes`, `StreamingActivatesNeighborhood`.

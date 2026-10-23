@@ -1,4 +1,5 @@
 using Forager.Core.Config;
+using Forager.Core.Items;
 using Forager.Core.Nodes;
 using Forager.Core.Randomness;
 
@@ -66,7 +67,7 @@ public sealed class HarvestService
     public HarvestOutcome TryHarvest(
         NodeDefinition definition,
         ResourceNodeState state,
-        string? equippedToolId,
+        ToolSpec? equippedTool,
         double nowSeconds)
     {
         ArgumentNullException.ThrowIfNull(definition);
@@ -79,8 +80,7 @@ public sealed class HarvestService
             return HarvestOutcome.Fail(HarvestStatus.Depleted);
         }
 
-        if (definition.RequiresTool
-            && !string.Equals(definition.RequiredTool, equippedToolId, StringComparison.OrdinalIgnoreCase))
+        if (!ToolRules.Satisfies(definition.RequiredTool, equippedTool))
         {
             return HarvestOutcome.Fail(HarvestStatus.MissingTool);
         }

@@ -13,7 +13,7 @@ public partial class GameSession
             return false;
         }
 
-        var save = SaveSerializer.Capture(Profile, Clock, ActiveSeed);
+        var save = SaveSerializer.Capture(Profile, Clock, ActiveSeed, Book);
 
         if (Player is not null)
         {
@@ -60,7 +60,7 @@ public partial class GameSession
             return false;
         }
 
-        SaveSerializer.Restore(save, Profile, Clock);
+        SaveSerializer.Restore(save, Profile, Clock, Book);
         _lastAutoSaveSeconds = Clock.TotalSeconds;
 
         if (Player is not null)

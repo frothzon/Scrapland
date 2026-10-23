@@ -27,6 +27,15 @@
     "icon_wool": 14,
     "icon_axe": 15,
     "icon_pickaxe": 16,
-    "icon_sword": 17
+    "icon_sword": 17,
+    "icon_plank": 18,
+    "icon_rope": 19,
+    "icon_iron_ingot": 20,
+    "icon_stone_axe": 21,
+    "icon_stone_pickaxe": 22,
+    "icon_iron_axe": 23,
+    "icon_iron_pickaxe": 24,
+    "icon_workbench": 25,
+    "icon_furnace": 26
   }
 }

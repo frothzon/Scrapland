@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Forager.Core.Player;
 using Forager.Core.Sim;
+using Forager.Core.Crafting;
 
 namespace Forager.Core.Save;
 
@@ -55,6 +56,7 @@ public static class SaveSerializer
 
         save.Slots ??= [];
         save.Nodes ??= [];
+        save.CraftedRecipes ??= [];
         save.Level = Math.Max(1, save.Level);
         save.Xp = Math.Max(0, save.Xp);
         save.Coins = Math.Max(0, save.Coins);
@@ -63,8 +65,8 @@ public static class SaveSerializer
         return save;
     }
 
-    /// <summary>Snapshots the parts of a live session that M1 persists.</summary>
-    public static SaveGame Capture(PlayerProfile profile, SimClock clock, int seed)
+    /// <summary>Snapshots the parts of a live session that M1/M2 persist.</summary>
+    public static SaveGame Capture(PlayerProfile profile, SimClock clock, int seed, RecipeBook? book = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(clock);
@@ -79,6 +81,11 @@ public static class SaveSerializer
             Coins = profile.Coins,
         };
 
+        if (book is not null)
+        {
+            save.CraftedRecipes = book.ToPersisted().ToList();
+        }
+
         for (var i = 0; i < profile.Inventory.SlotCount; i++)
         {
             var slot = profile.Inventory.GetSlot(i);
@@ -91,8 +98,8 @@ public static class SaveSerializer
         return save;
     }
 
-    /// <summary>Applies a save file to a live profile and clock.</summary>
-    public static void Restore(SaveGame save, PlayerProfile profile, SimClock clock)
+    /// <summary>Applies a save file to a live profile, clock and (optionally) recipe book.</summary>
+    public static void Restore(SaveGame save, PlayerProfile profile, SimClock clock, RecipeBook? book = null)
     {
         ArgumentNullException.ThrowIfNull(save);
         ArgumentNullException.ThrowIfNull(profile);
@@ -109,6 +116,7 @@ public static class SaveSerializer
 
         profile.Restore(save.Level, save.Xp, save.Coins, save.TotalXp);
         clock.RestoreTo(save.SimSeconds);
+        book?.RestoreFrom(save.CraftedRecipes);
     }
 
     private static bool IsEmpty(this SavedSlot slot)

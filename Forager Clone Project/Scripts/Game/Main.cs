@@ -1,4 +1,5 @@
 using ForagerClone.Cameras;
+using ForagerClone.Crafting;
 using ForagerClone.Interaction;
 using ForagerClone.Nodes;
 using ForagerClone.Player;
@@ -24,6 +25,12 @@ public partial class Main : Node3D
     public Interactor Interactor { get; private set; } = null!;
 
     public Hud HudLayer { get; private set; } = null!;
+
+    public CraftingPanel CraftPanel { get; private set; } = null!;
+
+    public InventoryPanel InventoryPanel { get; private set; } = null!;
+
+    public IReadOnlyList<Station3D> Stations { get; private set; } = Array.Empty<Station3D>();
 
     public IReadOnlyList<ResourceNode3D> WorldNodes { get; private set; } = Array.Empty<ResourceNode3D>();
 
@@ -58,6 +65,10 @@ public partial class Main : Node3D
         WorldNodes = SliceWorldBuilder.Build(worldRoot, Session.Nodes, Session.Balance, Session, Session.ActiveSeed);
         Session.RegisterWorldNodes(WorldNodes);
 
+        var stationRoot = new Node3D { Name = "Stations" };
+        AddChild(stationRoot);
+        Stations = SliceWorldBuilder.BuildStations(stationRoot, Session.Balance, Session);
+
         Interactor = new Interactor { Name = "Interactor", Session = Session, AimCamera = Rig.Camera };
         Player.AddChild(Interactor);
         Interactor.Configure(Session.Balance.Gather.RangeMeters);
@@ -66,12 +77,72 @@ public partial class Main : Node3D
         AddChild(HudLayer);
         HudLayer.Bind(Session, Interactor);
 
+        CraftPanel = new CraftingPanel { Name = "CraftPanel" };
+        AddChild(CraftPanel);
+        CraftPanel.Bind(Session);
+
+        InventoryPanel = new InventoryPanel { Name = "InventoryPanel" };
+        AddChild(InventoryPanel);
+        InventoryPanel.Bind(Session);
+
         Session.Persistence = new GodotPersistence();
 
         var version = Engine.GetVersionInfo().TryGetValue("string", out var value) ? value.AsString() : "unknown";
         GD.Print(
             $"[main] slice ready | engine={version} | display={DisplayServer.GetName()} | " +
             $"seed={Session.ActiveSeed} nodes={WorldNodes.Count} tool={Session.EquippedToolId ?? "none"}");
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event.IsActionPressed(InputActions.Inventory))
+        {
+            ToggleInventory();
+            GetViewport().SetInputAsHandled();
+        }
+        else if (@event.IsActionPressed(InputActions.Craft))
+        {
+            ToggleCrafting();
+            GetViewport().SetInputAsHandled();
+        }
+        else if (@event.IsActionPressed(InputActions.Cancel))
+        {
+            ClosePanels();
+            GetViewport().SetInputAsHandled();
+        }
+    }
+
+    public void ToggleInventory()
+    {
+        if (InventoryPanel.IsOpen)
+        {
+            ClosePanels();
+            return;
+        }
+
+        ClosePanels();
+        InventoryPanel.Open();
+    }
+
+    public void ToggleCrafting()
+    {
+        if (CraftPanel.IsOpen)
+        {
+            ClosePanels();
+            return;
+        }
+
+        ClosePanels();
+        var station = Session.NearbyStation(Player.GlobalPosition);
+        Session.OpenCrafting(station?.Kind);
+        CraftPanel.Open();
+    }
+
+    public void ClosePanels()
+    {
+        CraftPanel.Close();
+        InventoryPanel.Close();
+        Session.CloseUi();
     }
 
     private static int? ParseSeedArgument()

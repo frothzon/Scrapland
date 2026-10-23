@@ -26,7 +26,7 @@ public sealed class SavedNode
 /// </summary>
 public sealed class SaveGame
 {
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;
 
     public int Version { get; set; } = CurrentVersion;
 
@@ -51,4 +51,7 @@ public sealed class SaveGame
     public List<SavedSlot> Slots { get; set; } = [];
 
     public List<SavedNode> Nodes { get; set; } = [];
+
+    /// <summary>Recipe ids crafted at least once (drives <c>after:</c> unlocks). Added in v2.</summary>
+    public List<string> CraftedRecipes { get; set; } = [];
 }

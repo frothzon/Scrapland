@@ -50,7 +50,8 @@ why the gate always runs `dotnet build` before launching the engine.
 | `Forager.Core.Inventories.Inventory` | **done** | slot grid, stacking, add/remove, change events |
 | `Forager.Core.Sim.SimClock` | **done** | tick-based time, day rollover, night window |
 | `Forager.Core.Randomness.SeededRng` | **done** | deterministic RNG + stable forks |
-| `Forager.Core.Crafting` | M2 | recipes, station tiers, unlock gates |
+| `Forager.Core.Crafting` (`RecipeDatabase`, `RecipeGraph`, `RecipeBook`, `CraftingService`) | **done (M2)** | recipes, station + unlock gates, atomic craft, cycle detection |
+| `Forager.Core.Items.ToolRules` / `ToolSpec` | **done (M2)** | tool kind + tier gating, best-tool selection |
 | `Forager.Core.Skills` | M6 | 4-branch perk board, adjacency validation, effect aggregation |
 | `Forager.Core.Economy` | M6 | coins, land-price curve, market spread, bank interest |
 | `Forager.Core.World` | M3 | 16 m plots, seeded biome/node layout, purchase state |
@@ -97,10 +98,11 @@ Main (Node3D)                     Scripts/Game/Main.cs  — boots input actions,
                "drops": [ { "item": "wood", "min": 1, "max": 2 } ],
                "respawnSeconds": 45, "prefab": "res://Scenes/Nodes/Birch.tscn" } ] }
 
-// Data/recipes.json (M2)
-{ "recipes": [ { "id": "wood_axe", "station": "workbench", "seconds": 1.5,
-                 "inputs": { "wood": 5, "fiber": 2 }, "outputs": { "wood_axe": 1 },
-                 "unlock": "skill.industry.tools_1" } ] }
+// Data/recipes.json (implemented in M2; crafting is instant, no `seconds`)
+{ "recipes": [ { "id": "iron_ingot", "station": "furnace",
+                 "inputs": { "iron_ore": 2, "charcoal": 1 }, "outputs": { "iron_ingot": 1 },
+                 "xp": 8, "unlock": "level:2" } ] }
+// station: hand | workbench | furnace        unlock: (null) | level:N | after:<recipeId>
 ```
 
 ## 6. Determinism & save
@@ -123,7 +125,7 @@ Main (Node3D)                     Scripts/Game/Main.cs  — boots input actions,
 |---|---|---|
 | M0 ✅ | toolchain, guardrails, Core skeleton, headless harness, asset audit | `tools/verify.ps1` exit 0; 41 unit + 3 engine tests; audit 178 models |
 | M1 ✅ | player + fixed camera, harvest birch/pine/rock/bush with tool gating, drops + magnet, hotbar HUD, XP/coins, save/load | `tools\verify.ps1` exit 0; **141 unit + 14 engine tests**; `selftest-gate.ps1` exit 0 |
-| M2 | crafting stations + recipes + tool tiers + icon atlas | + recipe/atlas tests |
+| M2 ✅ | workbench + furnace stations, 14 recipes, tool tiers (wood→stone→iron), craft + inventory panels, save v2 | `tools\verify.ps1` exit 0; **189 unit + 22 engine tests** |
 | M3 | plot grid, buy land, biomes, streaming | + worldgen snapshot tests |
 | M4 | farming, animals, villagers, grid A* | + sim/path tests |
 | M5 | combat, enemies, dungeons | + FSM/damage tests |

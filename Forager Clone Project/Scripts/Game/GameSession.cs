@@ -1,4 +1,5 @@
 using Forager.Core.Config;
+using Forager.Core.Crafting;
 using Forager.Core.Gathering;
 using Forager.Core.Inventories;
 using Forager.Core.Items;
@@ -75,6 +76,8 @@ public partial class GameSession : Node
         Nodes = NodeDatabase.Load(data);
         Balance = BalanceConfig.Load(data);
         Icons = IconAtlasData.Load(data);
+        Recipes = RecipeDatabase.Load(data);
+        Crafting = new CraftingService(Recipes, Items);
 
         ActiveSeed = seedOverride ?? Balance.World.Seed;
         Rng = new SeededRng(ActiveSeed);
@@ -94,32 +97,27 @@ public partial class GameSession : Node
 
     public void RegisterWorldNodes(IReadOnlyList<ResourceNode3D> nodes) => WorldNodes = nodes;
 
-    /// <summary>The first tool in the inventory (M1 has no hotbar selection yet).</summary>
-    public string? EquippedToolId
+    /// <summary>Best tool the player carries (highest tier), or null.</summary>
+    public ToolSpec? EquippedTool => IsBooted ? Profile.EquippedTool(Items) : null;
+
+    /// <summary>Item id of the equipped tool (display/debug), or null.</summary>
+    public string? EquippedToolId => IsBooted ? Profile.EquippedToolId(Items) : null;
+
+    /// <summary>
+    /// The tool the player would use for a job needing <paramref name="required"/>: the best tool of that
+    /// exact kind (so a wooden axe never stands in for a pickaxe). Falls back to the generic equipped tool
+    /// when the job needs no tool at all.
+    /// </summary>
+    public ToolSpec? ToolFor(ToolSpec? required)
     {
-        get
+        if (!IsBooted)
         {
-            if (!IsBooted)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < Profile.Inventory.SlotCount; i++)
-            {
-                var slot = Profile.Inventory.GetSlot(i);
-                if (slot.IsEmpty)
-                {
-                    continue;
-                }
-
-                if (Items.TryGet(slot.ItemId, out var definition) && definition.HasTag("tool"))
-                {
-                    return definition.Id;
-                }
-            }
-
             return null;
         }
+
+        return required is { } needed
+            ? Profile.BestTool(Items, needed.Kind)?.Spec
+            : EquippedTool;
     }
 
     public double NowSeconds => Clock.TotalSeconds;

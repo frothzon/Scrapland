@@ -10,7 +10,9 @@ public sealed record ItemDefinition(
     int MaxStack,
     int Value,
     IReadOnlyList<string> Tags,
-    string? Icon)
+    string? Icon,
+    string? ToolKind = null,
+    int ToolTier = 1)
 {
     public bool HasTag(string tag)
     {

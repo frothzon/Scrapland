@@ -13,6 +13,7 @@ public sealed class WorldPlacementTests
         1,
         null,
         1,
+        1,
         10,
         1,
         0,

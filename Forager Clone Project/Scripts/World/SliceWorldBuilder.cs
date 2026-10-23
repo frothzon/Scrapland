@@ -1,6 +1,8 @@
 using Forager.Core.Config;
+using Forager.Core.Crafting;
 using Forager.Core.Nodes;
 using Forager.Core.World;
+using ForagerClone.Crafting;
 using ForagerClone.Game;
 using ForagerClone.Nodes;
 using Godot;
@@ -41,6 +43,32 @@ public static class SliceWorldBuilder
         });
 
         return ground;
+    }
+
+    /// <summary>
+    /// Pre-places the M2 crafting stations. Positions are layout, not balance: M3 replaces this with
+    /// player-built structures on the plot grid.
+    /// </summary>
+    public static IReadOnlyList<Station3D> BuildStations(Node3D root, BalanceConfig balance, GameSession session)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        ArgumentNullException.ThrowIfNull(balance);
+        ArgumentNullException.ThrowIfNull(session);
+
+        var radius = balance.Craft.StationRadius;
+        var stations = new List<Station3D>
+        {
+            StationFactory.Create(StationKind.Workbench, radius, new Vector3(-4f, 0f, -4f)),
+            StationFactory.Create(StationKind.Furnace, radius, new Vector3(4f, 0f, -4f)),
+        };
+
+        foreach (var station in stations)
+        {
+            root.AddChild(station);
+        }
+
+        session.RegisterStations(stations);
+        return stations;
     }
 
     public static IReadOnlyList<ResourceNode3D> Build(

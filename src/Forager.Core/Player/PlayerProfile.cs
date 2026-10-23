@@ -1,4 +1,5 @@
 using Forager.Core.Inventories;
+using Forager.Core.Items;
 
 namespace Forager.Core.Player;
 
@@ -126,6 +127,49 @@ public sealed class PlayerProfile
         Coins += amount;
         Changed?.Invoke();
     }
+
+    /// <summary>
+    /// Best tool in the inventory, optionally restricted to one kind (e.g. "axe"). Highest tier wins;
+    /// ties go to the lower slot index so results are deterministic.
+    /// </summary>
+    public (string ItemId, ToolSpec Spec)? BestTool(ItemDatabase items, string? kind = null)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        (string ItemId, ToolSpec Spec)? best = null;
+
+        for (var i = 0; i < Inventory.SlotCount; i++)
+        {
+            var slot = Inventory.GetSlot(i);
+            if (slot.IsEmpty || !items.TryGet(slot.ItemId, out var definition))
+            {
+                continue;
+            }
+
+            if (ToolRules.Of(definition) is not { } candidate)
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(kind) && !string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (best is null || candidate.Tier > best.Value.Spec.Tier)
+            {
+                best = (definition.Id, candidate);
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>The best tool's <see cref="ToolSpec"/>, or null when the player carries none.</summary>
+    public ToolSpec? EquippedTool(ItemDatabase items) => BestTool(items)?.Spec;
+
+    /// <summary>The best tool's item id, or null when the player carries none.</summary>
+    public string? EquippedToolId(ItemDatabase items) => BestTool(items)?.ItemId;
 
     public bool TrySpendCoins(int amount)
     {

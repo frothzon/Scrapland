@@ -97,7 +97,10 @@ Bounds are unit-tested, the visual choice is a manual eyeball check (`Docs\testi
 | Player model | `ChibiCharacters\glb emission\student.glb` | scale **0.73** ⇒ ~1.5 m tall, 11 clips |
 | Tree node | `3D Trees\OBJ\BirchTree_1.obj` | scale 1.0 (3.57 m) |
 | Tree node (variant) | `3D Trees\OBJ\PineTree_1.obj` | scale 1.0 |
-| Rock node | `3D Trees\OBJ\Rock_1.obj` | scale 1.0 (0.88 m), pickaxe only |
+| Rock node | `3D Trees\OBJ\Rock_1.obj` | scale 1.0 (0.88 m), pickaxe t1 |
+| Coal seam node | `3D Trees\OBJ\Rock_2.obj` | pickaxe t1 → coal + stone |
+| Iron vein node | `3D Trees\OBJ\Rock_3.obj` | pickaxe t1 → iron ore |
+| Gold vein node | `3D Trees\OBJ\Rock_4.obj` | **pickaxe t2** → gold ore |
 | Berry bush node | `3D Trees\OBJ\BushBerries_1.obj` | scale 0.8 |
 | HUD icons | `Sprout Lands …\Sprite sheets\Icons\All Icons.png` | 16 px cells, indices in `Data\icon_atlas.json` |
 | HUD font | `Sprout Lands …\fonts\pixelFont-7-8x14-sproutLands.ttf` | theme default, size 14 |

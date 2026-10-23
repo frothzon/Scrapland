@@ -4,13 +4,14 @@ namespace Forager.Tests;
 
 public sealed class ResourceNodeStateTests
 {
-    private static NodeDefinition Tree(int hitPoints = 3, double respawnSeconds = 10) => new(
+    private static NodeDefinition Tree(int hitPoints = 3, string? toolKind = null, double respawnSeconds = 10) => new(
         "tree",
         "tree",
         "Tree",
         "res://Assets/x.obj",
         1,
-        "wood_axe",
+        toolKind,
+        1,
         hitPoints,
         respawnSeconds,
         Xp: 8,

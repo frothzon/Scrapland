@@ -32,11 +32,11 @@
 | Area | Entries |
 |---|---|
 | Tooling | LL-001, LL-004, LL-005, LL-010 |
-| Engine / C# | LL-003, LL-006, LL-011, LL-012, LL-015, LL-020, LL-021, LL-023, LL-026 |
-| Assets | LL-007, LL-013, LL-014, LL-025, LL-028 |
+| Engine / C# | LL-003, LL-006, LL-011, LL-012, LL-015, LL-020, LL-021, LL-023, LL-026, LL-030 |
+| Assets | LL-007, LL-013, LL-014, LL-025, LL-028, LL-031 |
 | Headless | LL-002, LL-008, LL-017, LL-019, LL-027 |
 | PowerShell | LL-009, LL-018 |
-| Gameplay / domain | LL-016, LL-022, LL-024 |
+| Gameplay / domain | LL-016, LL-022, LL-024, LL-029, LL-032 |
 
 ---
 
@@ -381,6 +381,56 @@ Measured on this machine, not assumed. Re-verify if the machine changes; don't r
   needs the Premium pack or permission.
 - **Guard:** none automated — `Docs/ATTRIBUTION.md` checklist is the gate before any public build.
 - **References:** `Assets/Sprout Lands - UI Pack - Basic pack/read_me.txt`, `Docs/ATTRIBUTION.md`.
+
+---
+
+## M2 additions (crafting, tool tiers, panels)
+
+### LL-029 — The equipped tool was the wrong *kind*: an axe mined rocks
+- **Date / area / status:** 2026-10-23 · Gameplay · resolved
+- **Symptom:** `OreNodeTests` never mined the iron vein and `ToolTierTests` still reported `MissingTool` after
+  granting a stone pickaxe; hits registered as if no pickaxe were carried.
+- **Root cause:** `HarvestService` was fed `Session.EquippedTool`, which is "best tool overall". With an axe and
+  a pickaxe both at tier 1 the axe won on slot order, so every pickaxe job looked unarmed. M1 never caught it
+  because its only rock test asserted the *failure* path (`MissingToolTests`).
+- **Fix:** tool selection is requirement-aware — `GameSession.ToolFor(nodeDefinition.RequiredTool)` asks the
+  profile for the best tool **of that kind**; the interactor passes that to `HarvestService`.
+- **Guard:** `ToolTierTests` proves the stone axe outranks the wood axe, that gold (pickaxe t2) is denied to a
+  tier-1 pickaxe, and that granting the stone pickaxe succeeds; `OreNodeTests` proves a full mining loop.
+- **References:** `Scripts/Game/GameSession.cs`, `Scripts/Interaction/Interactor.cs`,
+  `Tests/Headless/Cases/ToolTierTests.cs`.
+
+### LL-030 — The craft panel silently listed only the first 7 of 11 station recipes
+- **Date / area / status:** 2026-10-23 · Engine · resolved
+- **Symptom:** recipes later in the alphabetical list (e.g. `stone_axe`) could not be found or clicked.
+- **Root cause:** the panel created a fixed number of row widgets (`MaxRows = 7`) and hid the rest, with no
+  scrolling — data outgrew the UI.
+- **Fix:** `MaxRows = 12` (covers every station's current list) and the rows now live in a `ScrollContainer`, so
+  more content scrolls instead of disappearing. `Refresh()` hides unused rows rather than truncating recipe data.
+- **Guard:** `CraftingPanelTests` asserts the station list count and finds recipes by id, so a future cap shows up
+  as a failed lookup rather than a silent UI hole.
+- **References:** `Scripts/Ui/CraftingPanel.cs`, `Scripts/Ui/CraftingPanel.Layout.cs`.
+
+### LL-031 — "atlas.Icons.Count >= Items.Count" broke when items legitimately share icons
+- **Date / area / status:** 2026-10-23 · Assets · resolved
+- **Symptom:** `IconAtlasTests.ShippedAtlas_LoadsAndCoversEveryItem` failed after adding 12 items.
+- **Root cause:** the assertion used icon count as a proxy for coverage; M2 deliberately reuses icons
+  (`charcoal` → `icon_coal`, `gold_ingot` → `icon_gold_ore`, `iron_sword` → `icon_sword`, kits).
+- **Fix:** assert coverage of **distinct** item icons instead of comparing raw counts; per-item resolution is still
+  enforced by `IconAtlasData.Validate` (which reports unmapped icons).
+- **Guard:** the rewritten assertion + `Validate` in the same test.
+- **References:** `tests/Forager.Tests/IconAtlasTests.cs`, `Data/icon_atlas.json`.
+
+### LL-032 — Save format bump without breaking existing slots
+- **Date / area / status:** 2026-10-23 · Gameplay · resolved
+- **Symptom:** (prevented) adding the crafted-recipe set to the save could have made older slots unloadable.
+- **Root cause:** `SaveSerializer.FromJson` rejects versions **newer** than the build; adding a field must not
+  change what older payloads mean.
+- **Fix:** `SaveGame.CurrentVersion = 2` with `CraftedRecipes ??= []` on load, so a v1 file loads with an empty
+  crafted set; `RecipeBook` derives unlocks from that set, so no migration code is needed.
+- **Guard:** `VersionOneSave_StillLoads_WithEmptyCraftState` feeds a literal v1 payload; `Capture_RoundTripsCraftedRecipes`
+  covers the v2 path.
+- **References:** `src/Forager.Core/Save/SaveSerializer.cs`, `tests/Forager.Tests/SaveSerializerTests.cs`.
 
 
 
